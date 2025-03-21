@@ -86,7 +86,7 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch(() => { /* no-op */ }); // FIX: Added empty function comment
+              .catch(() => {}); // FIXED: Removed unnecessary return
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
             window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
@@ -100,18 +100,25 @@ export function SignInForm(): React.JSX.Element {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
 
-        window.addEventListener('mousemove', updateActivity);
-        window.addEventListener('click', updateActivity);
-        window.addEventListener('keypress', updateActivity);
-        window.addEventListener('scroll', updateActivity);
+        window.addEventListener('mousemove', () => {
+          updateActivity();
+        });
+        window.addEventListener('click', () => {
+          updateActivity();
+        });
+        window.addEventListener('keypress', () => {
+          updateActivity();
+        });
+        window.addEventListener('scroll', () => {
+          updateActivity();
+        });
 
         window.sessionStorage.setItem('hasActivityListeners', 'true');
       }
 
       router.refresh();
-    } catch {
-      // FIX: Added explicit empty function body
-      return;
+    } catch (error) {
+      console.error(error); // FIXED: Removed unnecessary return
     }
   }, [checkSession, router, setError]);
 
