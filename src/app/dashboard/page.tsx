@@ -34,11 +34,11 @@ interface ProfitData {
 }
 
 interface SalesTrendData {
-  chartSeries: number[];
+  chartSeries: { name: string; data: number[] }[];
 }
 
 interface UserGrowthData {
-  chartSeries: number[];
+  chartSeries: { name: string; data: number[] }[];
 }
 
 interface TrafficData {
@@ -78,8 +78,10 @@ export default function DashboardPage(): React.JSX.Element {
     return <div>Error loading dashboard data</div>;
   }
 
-  // Ensure TypeScript knows `data` is of type `DashboardData`
-  const dashboardData = data as DashboardData;
+  if (!data || typeof data !== "object" || !("budget" in data)) {
+    return <div>Error: Invalid dashboard data</div>;
+  }
+  const dashboardData = data as unknown as DashboardData;
 
   return (
     <Grid container spacing={3}>
@@ -88,7 +90,8 @@ export default function DashboardPage(): React.JSX.Element {
           diff={dashboardData.budget.diff} 
           trend={dashboardData.budget.trend} 
           sx={{ height: '100%' }} 
-          value={dashboardData.budget.value} 
+          value={dashboardData.budget.value.toString()}
+
         />
       </Grid>
 
@@ -97,7 +100,8 @@ export default function DashboardPage(): React.JSX.Element {
           diff={dashboardData.customers.diff} 
           trend={dashboardData.customers.trend} 
           sx={{ height: '100%' }} 
-          value={dashboardData.customers.value} 
+          value={dashboardData.budget.value.toString()}
+
         />
       </Grid>
 
@@ -111,20 +115,24 @@ export default function DashboardPage(): React.JSX.Element {
       <Grid lg={3} sm={6} xs={12}>
         <TotalProfit 
           sx={{ height: '100%' }} 
-          value={dashboardData.profit.value} 
+          value={dashboardData.profit.value.toString()} // Convert to string
         />
       </Grid>
 
       <Grid lg={12} xs={12}>
         <SalesTrend
-          chartSeries={dashboardData.salesTrend.chartSeries}
+          chartSeries={[
+            { name: "Sales", data: dashboardData.salesTrend.chartSeries.map(Number) }
+          ]}
           sx={{ height: '100%' }}
         />
       </Grid>
 
       <Grid lg={8} xs={12}>
         <UserGrowth
-          chartSeries={dashboardData.userGrowth.chartSeries}
+          chartSeries={[
+            { name: "User Growth", data: dashboardData.userGrowth.chartSeries.map(Number) }
+          ]}
           sx={{ height: '100%' }}
         />
       </Grid>
