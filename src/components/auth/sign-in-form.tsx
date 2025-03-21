@@ -38,11 +38,21 @@ const defaultValues: Values = {
   keepLoggedIn: false 
 };
 
+// Store these functions to reference them in cleanup
+const noop = (): void => {
+  // Empty function with explicit return type
+};
+
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
   const { checkSession } = useUser();
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
   const [isPending, setIsPending] = React.useState<boolean>(false);
+  
+  // Create a reference to the activity update function
+  const updateActivityRef = React.useRef<() => void>(() => {
+    localStorage.setItem('lastActivity', Date.now().toString());
+  });
 
   const {
     control,
@@ -85,7 +95,10 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch(() => {}); 
+              .catch((err) => {
+                // Log the error but keep it handled
+                console.error('Error during sign out:', err);
+              }); 
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
             window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
@@ -95,14 +108,11 @@ export function SignInForm(): React.JSX.Element {
         const timeoutId = window.setTimeout(checkInactivity, 10000);
         window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
 
-        const updateActivity = (): void => {
-          localStorage.setItem('lastActivity', Date.now().toString());
-        };
-
-        window.addEventListener('mousemove', updateActivity);
-        window.addEventListener('click', updateActivity);
-        window.addEventListener('keypress', updateActivity);
-        window.addEventListener('scroll', updateActivity);
+        // Use the ref's current value
+        window.addEventListener('mousemove', updateActivityRef.current);
+        window.addEventListener('click', updateActivityRef.current);
+        window.addEventListener('keypress', updateActivityRef.current);
+        window.addEventListener('scroll', updateActivityRef.current);
 
         window.sessionStorage.setItem('hasActivityListeners', 'true');
       }
@@ -121,15 +131,20 @@ export function SignInForm(): React.JSX.Element {
       }
 
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
-        window.removeEventListener('mousemove', () => {});
-        window.removeEventListener('click', () => {});
-        window.removeEventListener('keypress', () => {});
-        window.removeEventListener('scroll', () => {});
+        // Remove event listeners using the same reference
+        window.removeEventListener('mousemove', updateActivityRef.current);
+        window.removeEventListener('click', updateActivityRef.current);
+        window.removeEventListener('keypress', updateActivityRef.current);
+        window.removeEventListener('scroll', updateActivityRef.current);
 
         window.sessionStorage.removeItem('hasActivityListeners');
       }
     };
   }, []);
+
+  const handleTogglePassword = (): void => {
+    setShowPassword(!showPassword);
+  };
 
   return (
     <Stack spacing={4}>
@@ -151,7 +166,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.email)}>
                 <InputLabel>Email address</InputLabel>
                 <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email?.message && <FormHelperText>{errors.email.message}</FormHelperText>}
+                {errors.email?.message ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -164,14 +179,33 @@ export function SignInForm(): React.JSX.Element {
                 <OutlinedInput
                   {...field}
                   endAdornment={
-                    <span onClick={() => setShowPassword(!showPassword)} style={{ cursor: 'pointer' }}>
-                      {showPassword ? <EyeIcon fontSize="var(--icon-fontSize-md)" /> : <EyeSlashIcon fontSize="var(--icon-fontSize-md)" />}
-                    </span>
+                    <Button
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      tabIndex={0}
+                      onClick={handleTogglePassword}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleTogglePassword();
+                        }
+                      }}
+                      sx={{ 
+                        minWidth: 'auto', 
+                        p: 0,
+                        backgroundColor: 'transparent',
+                        '&:hover': { backgroundColor: 'transparent' },
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {showPassword ? 
+                        <EyeIcon fontSize="var(--icon-fontSize-md)" /> : 
+                        <EyeSlashIcon fontSize="var(--icon-fontSize-md)" />
+                      }
+                    </Button>
                   }
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                 />
-                {errors.password?.message && <FormHelperText>{errors.password.message}</FormHelperText>}
+                {errors.password?.message ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -182,7 +216,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControlLabel control={<Checkbox {...field} checked={field.value} />} label="Keep me logged in" />
             )}
           />
-          {errors.root?.message && <Alert color="error">{errors.root?.message}</Alert>}
+          {errors.root?.message ? <Alert color="error">{errors.root.message}</Alert> : null}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>
