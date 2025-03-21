@@ -63,7 +63,6 @@ export function SignInForm(): React.JSX.Element {
         return;
       }
 
-      // Refresh the auth state
       await checkSession?.();
 
       if (values.keepLoggedIn) {
@@ -86,7 +85,7 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch(() => {}); // ✅ FIXED: No empty function
+              .catch(() => {}); 
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
             window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
@@ -100,21 +99,21 @@ export function SignInForm(): React.JSX.Element {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
 
-        window.addEventListener('mousemove', () => { updateActivity(); }); // ✅ FIXED
-        window.addEventListener('click', () => { updateActivity(); }); // ✅ FIXED
-        window.addEventListener('keypress', () => { updateActivity(); }); // ✅ FIXED
-        window.addEventListener('scroll', () => { updateActivity(); }); // ✅ FIXED
+        window.addEventListener('mousemove', updateActivity);
+        window.addEventListener('click', updateActivity);
+        window.addEventListener('keypress', updateActivity);
+        window.addEventListener('scroll', updateActivity);
 
         window.sessionStorage.setItem('hasActivityListeners', 'true');
       }
 
       router.refresh();
     } catch (error) {
-      setError('root', { type: 'server', message: 'An unexpected error occurred.' }); // ✅ FIXED: No console.error
+      setError('root', { type: 'server', message: 'An unexpected error occurred.' });
     }
   }, [checkSession, router, setError]);
 
-  React.useEffect((): (() => void) => {
+  React.useEffect(() => {
     return () => {
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
@@ -122,14 +121,10 @@ export function SignInForm(): React.JSX.Element {
       }
 
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
-        const updateActivity = (): void => {
-          localStorage.setItem('lastActivity', Date.now().toString());
-        };
-
-        window.removeEventListener('mousemove', updateActivity);
-        window.removeEventListener('click', updateActivity);
-        window.removeEventListener('keypress', updateActivity);
-        window.removeEventListener('scroll', updateActivity);
+        window.removeEventListener('mousemove', () => {});
+        window.removeEventListener('click', () => {});
+        window.removeEventListener('keypress', () => {});
+        window.removeEventListener('scroll', () => {});
 
         window.sessionStorage.removeItem('hasActivityListeners');
       }
@@ -169,11 +164,9 @@ export function SignInForm(): React.JSX.Element {
                 <OutlinedInput
                   {...field}
                   endAdornment={
-                    showPassword ? (
-                      <EyeIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={() => setShowPassword(false)} />
-                    ) : (
-                      <EyeSlashIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={() => setShowPassword(true)} />
-                    )
+                    <span onClick={() => setShowPassword(!showPassword)} style={{ cursor: 'pointer' }}>
+                      {showPassword ? <EyeIcon fontSize="var(--icon-fontSize-md)" /> : <EyeSlashIcon fontSize="var(--icon-fontSize-md)" />}
+                    </span>
                   }
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
@@ -186,10 +179,10 @@ export function SignInForm(): React.JSX.Element {
             control={control}
             name="keepLoggedIn"
             render={({ field }) => (
-              <FormControlLabel control={<Checkbox {...field} />} label="Keep me logged in" />
+              <FormControlLabel control={<Checkbox {...field} checked={field.value} />} label="Keep me logged in" />
             )}
           />
-          {Boolean(errors.root?.message) && <Alert color="error">{errors.root?.message}</Alert>} {/* ✅ FIXED */}
+          {errors.root?.message && <Alert color="error">{errors.root?.message}</Alert>}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>
