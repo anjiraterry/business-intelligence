@@ -12,15 +12,59 @@ import { TotalProfit } from '@/components/dashboard/overview/total-profit';
 import { Traffic } from '@/components/dashboard/overview/traffic';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 
-// At the top of your dashboard file
+// Define TypeScript interfaces for data structure
+interface BudgetData {
+  diff: number;
+  trend: 'up' | 'down';
+  value: number;
+}
+
+interface CustomerData {
+  diff: number;
+  trend: 'up' | 'down';
+  value: number;
+}
+
+interface TaskData {
+  value: number;
+}
+
+interface ProfitData {
+  value: number;
+}
+
+interface SalesTrendData {
+  chartSeries: number[];
+}
+
+interface UserGrowthData {
+  chartSeries: number[];
+}
+
+interface TrafficData {
+  chartSeries: number[];
+  labels: string[];
+}
+
 interface Order {
   id: string;
   customer: {
     name: string;
   };
   amount: number;
-  status: "pending" | "delivered" | "refunded";
+  status: 'pending' | 'delivered' | 'refunded';
   createdAt: Date;
+}
+
+interface DashboardData {
+  budget: BudgetData;
+  customers: CustomerData;
+  tasks: TaskData;
+  profit: ProfitData;
+  salesTrend: SalesTrendData;
+  userGrowth: UserGrowthData;
+  traffic: TrafficData;
+  orders: Order[];
 }
 
 export default function DashboardPage(): React.JSX.Element {
@@ -34,65 +78,68 @@ export default function DashboardPage(): React.JSX.Element {
     return <div>Error loading dashboard data</div>;
   }
 
+  // Ensure TypeScript knows `data` is of type `DashboardData`
+  const dashboardData = data as DashboardData;
+
   return (
     <Grid container spacing={3}>
       <Grid lg={3} sm={6} xs={12}>
         <Budget 
-          diff={data.budget.diff} 
-          trend={data.budget.trend as "up" | "down"} 
+          diff={dashboardData.budget.diff} 
+          trend={dashboardData.budget.trend} 
           sx={{ height: '100%' }} 
-          value={data.budget.value} 
+          value={dashboardData.budget.value} 
         />
       </Grid>
-      
+
       <Grid lg={3} sm={6} xs={12}>
         <TotalCustomers 
-          diff={data.customers.diff} 
-          trend={data.customers.trend  as "up" | "down" } 
+          diff={dashboardData.customers.diff} 
+          trend={dashboardData.customers.trend} 
           sx={{ height: '100%' }} 
-          value={data.customers.value} 
+          value={dashboardData.customers.value} 
         />
       </Grid>
-      
+
       <Grid lg={3} sm={6} xs={12}>
         <TasksProgress 
           sx={{ height: '100%' }} 
-          value={data.tasks.value} 
+          value={dashboardData.tasks.value} 
         />
       </Grid>
-      
+
       <Grid lg={3} sm={6} xs={12}>
         <TotalProfit 
           sx={{ height: '100%' }} 
-          value={data.profit.value} 
+          value={dashboardData.profit.value} 
         />
       </Grid>
-      
+
       <Grid lg={12} xs={12}>
         <SalesTrend
-          chartSeries={data.salesTrend.chartSeries}
+          chartSeries={dashboardData.salesTrend.chartSeries}
           sx={{ height: '100%' }}
         />
       </Grid>
-      
+
       <Grid lg={8} xs={12}>
         <UserGrowth
-          chartSeries={data.userGrowth.chartSeries}
+          chartSeries={dashboardData.userGrowth.chartSeries}
           sx={{ height: '100%' }}
         />
       </Grid>
-      
+
       <Grid lg={4} md={6} xs={12}>
         <Traffic 
-          chartSeries={data.traffic.chartSeries} 
-          labels={data.traffic.labels} 
+          chartSeries={dashboardData.traffic.chartSeries} 
+          labels={dashboardData.traffic.labels} 
           sx={{ height: '100%' }} 
         />
       </Grid>
-      
+
       <Grid lg={12} md={12} xs={12}>
         <LatestOrders
-          orders={data.orders as Order[]}
+          orders={dashboardData.orders}
           sx={{ height: '100%' }}
         />
       </Grid>
