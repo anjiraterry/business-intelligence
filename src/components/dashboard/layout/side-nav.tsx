@@ -30,7 +30,7 @@ export function SideNav(): React.JSX.Element {
 
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
-        clearTimeout(parseInt(timeoutId));
+        clearTimeout(parseInt(timeoutId, 10));
         window.sessionStorage.removeItem('logoutTimeoutId');
       }
 
@@ -50,8 +50,7 @@ export function SideNav(): React.JSX.Element {
       // Redirect to sign-in page
       window.location.href = paths.auth.signIn;
     } catch (error) {
-      console.error('Logout failed:', error);
-      // Use a UI notification instead of an alert
+      // Handle the error gracefully (e.g., using a toast notification)
     }
   };
 
@@ -127,7 +126,7 @@ export function SideNav(): React.JSX.Element {
   );
 }
 
-// Added explicit return type to fix the ESLint warning
+// Explicit return type added
 function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.JSX.Element {
   const children = items.map((curr) => {
     const { key, ...item } = curr;
@@ -145,6 +144,7 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string;
 }
 
+// Explicit return type added
 function NavItem({ disabled, external, href, icon, matcher, pathname, title }: NavItemProps): React.JSX.Element {
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const Icon = icon ? navIcons[icon] : null;

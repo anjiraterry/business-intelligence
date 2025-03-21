@@ -86,7 +86,7 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch(() => {}); // Avoid console logs
+              .catch(() => { /* no-op */ }); // FIX: Added empty function comment
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
             window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
@@ -110,7 +110,8 @@ export function SignInForm(): React.JSX.Element {
 
       router.refresh();
     } catch {
-      // Avoid console logs
+      // FIX: Added explicit empty function body
+      return;
     }
   }, [checkSession, router, setError]);
 
@@ -200,9 +201,6 @@ export function SignInForm(): React.JSX.Element {
           </Button>
         </Stack>
       </form>
-      <Alert color="warning">
-        Use <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">anjiraterry@gmail.com</Typography> with password <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">Secret1</Typography>
-      </Alert>
     </Stack>
   );
 }

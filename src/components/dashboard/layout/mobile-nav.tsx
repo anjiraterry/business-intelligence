@@ -16,10 +16,10 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 
-import LogoutIcon from '@mui/icons-material/Logout'; 
+import LogoutIcon from '@mui/icons-material/Logout';
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
-import { authClient } from '@/lib/auth/client'; 
+import { authClient } from '@/lib/auth/client';
 
 export interface MobileNavProps {
   onClose?: () => void;
@@ -34,29 +34,29 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
   const handleLogout = async (): Promise<void> => {
     try {
       await authClient.signOut();
-  
+
       localStorage.removeItem('keepLoggedIn');
       localStorage.removeItem('lastActivity');
-  
+
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
         clearTimeout(parseInt(timeoutId));
         window.sessionStorage.removeItem('logoutTimeoutId');
       }
-  
+
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
         const updateActivity = (): void => {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
-  
+
         window.removeEventListener('mousemove', updateActivity);
         window.removeEventListener('click', updateActivity);
         window.removeEventListener('keypress', updateActivity);
         window.removeEventListener('scroll', updateActivity);
-  
+
         window.sessionStorage.removeItem('hasActivityListeners');
       }
-  
+
       window.location.href = paths.auth.signIn;
     } catch (error) {
       setErrorMessage('Logout failed. Please try again.');
@@ -104,9 +104,9 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
           >
             <Box
               sx={{
-                fontSize: 18, 
+                fontSize: 18,
                 fontWeight: "bold",
-                color: "white", 
+                color: "white",
                 letterSpacing: 1,
               }}
             >
@@ -136,7 +136,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       </Drawer>
 
       {/* Error Snackbar */}
-      <Snackbar open={!!errorMessage} autoHideDuration={4000} onClose={() => setErrorMessage(null)}>
+      <Snackbar open={Boolean(errorMessage)} autoHideDuration={4000} onClose={() => { setErrorMessage(null); }}>
         <Alert severity="error">{errorMessage}</Alert>
       </Snackbar>
     </>
@@ -206,10 +206,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
           ) : null}
         </Box>
         <Box sx={{ flex: '1 1 auto' }}>
-          <Typography
-            component="span"
-            sx={{ color: 'inherit', fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}
-          >
+          <Typography component="span" sx={{ color: 'inherit', fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}>
             {title}
           </Typography>
         </Box>
