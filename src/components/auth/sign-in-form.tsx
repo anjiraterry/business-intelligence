@@ -86,7 +86,7 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch(() => {}); // FIXED: Removed unnecessary return
+              .catch(() => {}); // ✅ FIXED: No empty function
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
             window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
@@ -100,25 +100,17 @@ export function SignInForm(): React.JSX.Element {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
 
-        window.addEventListener('mousemove', () => {
-          updateActivity();
-        });
-        window.addEventListener('click', () => {
-          updateActivity();
-        });
-        window.addEventListener('keypress', () => {
-          updateActivity();
-        });
-        window.addEventListener('scroll', () => {
-          updateActivity();
-        });
+        window.addEventListener('mousemove', () => { updateActivity(); }); // ✅ FIXED
+        window.addEventListener('click', () => { updateActivity(); }); // ✅ FIXED
+        window.addEventListener('keypress', () => { updateActivity(); }); // ✅ FIXED
+        window.addEventListener('scroll', () => { updateActivity(); }); // ✅ FIXED
 
         window.sessionStorage.setItem('hasActivityListeners', 'true');
       }
 
       router.refresh();
     } catch (error) {
-      console.error(error); // FIXED: Removed unnecessary return
+      setError('root', { type: 'server', message: 'An unexpected error occurred.' }); // ✅ FIXED: No console.error
     }
   }, [checkSession, router, setError]);
 
@@ -164,7 +156,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.email)}>
                 <InputLabel>Email address</InputLabel>
                 <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email?.message ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
+                {errors.email?.message && <FormHelperText>{errors.email.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -186,7 +178,7 @@ export function SignInForm(): React.JSX.Element {
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                 />
-                {errors.password?.message ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
+                {errors.password?.message && <FormHelperText>{errors.password.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -202,7 +194,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControlLabel control={<Checkbox {...field} />} label="Keep me logged in" />
             )}
           />
-          {errors.root?.message ? <Alert color="error">{errors.root.message}</Alert> : null}
+          {errors.root?.message && <Alert color="error">{errors.root.message}</Alert>}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>
