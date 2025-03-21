@@ -31,34 +31,35 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
   const handleLogout = async (): Promise<void> => {
     try {
       await authClient.signOut();
-      
+  
       localStorage.removeItem('keepLoggedIn');
       localStorage.removeItem('lastActivity');
-
+  
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
         clearTimeout(parseInt(timeoutId));
         window.sessionStorage.removeItem('logoutTimeoutId');
       }
-
+  
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
         const updateActivity = (): void => {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
-
+  
         window.removeEventListener('mousemove', updateActivity);
         window.removeEventListener('click', updateActivity);
         window.removeEventListener('keypress', updateActivity);
         window.removeEventListener('scroll', updateActivity);
-
+  
         window.sessionStorage.removeItem('hasActivityListeners');
       }
-
+  
       window.location.href = paths.auth.signIn;
     } catch (error) {
-      alert('Logout failed. Please try again.'); // Optional: replace console.error with alert
+      console.error('Logout failed:', error); // ✅ Replaces alert with console.error
     }
   };
+  
 
   return (
     <Drawer

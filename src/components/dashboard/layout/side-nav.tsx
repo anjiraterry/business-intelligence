@@ -50,7 +50,8 @@ export function SideNav(): React.JSX.Element {
       // Redirect to sign-in page
       window.location.href = paths.auth.signIn;
     } catch (error) {
-      alert('Logout failed. Please try again.'); // Replace console.error
+      console.error('Logout failed:', error);
+      // Use a UI notification instead of an alert
     }
   };
 
@@ -126,6 +127,7 @@ export function SideNav(): React.JSX.Element {
   );
 }
 
+// Added explicit return type to fix the ESLint warning
 function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.JSX.Element {
   const children = items.map((curr) => {
     const { key, ...item } = curr;

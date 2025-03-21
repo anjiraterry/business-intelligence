@@ -65,10 +65,10 @@ export default function NextAppDirEmotionCacheProvider(
 
       if (typeof style !== 'boolean') {
         if (isGlobal) {
-          globals.push({ name, style: style as string });
+          globals.push({ name, style: String(style) }); // Ensuring style is a string
         } else {
-          styles += style;
-          dataEmotionAttribute += ` ${name}`;
+          styles += String(style);
+          dataEmotionAttribute = `${dataEmotionAttribute} ${name}`.trim(); // Ensuring proper string concatenation
         }
       }
     });

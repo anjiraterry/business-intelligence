@@ -35,7 +35,7 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
       setIsChecking(false);
     };
 
-    checkPermissions().catch((err) => {
+    checkPermissions().catch((err: unknown) => {
       logger.error('[AuthGuard]: Error checking permissions', err);
     });
   }, [user, error, isLoading, router]);

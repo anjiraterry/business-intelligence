@@ -32,11 +32,11 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { 
+const defaultValues: Values = { 
   email: 'anjiraterry@gmail.com', 
   password: 'Secret1',
   keepLoggedIn: false 
-} satisfies Values;
+};
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -51,63 +51,69 @@ export function SignInForm(): React.JSX.Element {
     formState: { errors },
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
-  // ✅ Explicit return type added
   const onSubmit = React.useCallback(async (values: Values): Promise<void> => {
-    setIsPending(true);
+    try {
+      setIsPending(true);
 
-    const { error } = await authClient.signInWithPassword(values);
+      const { error } = await authClient.signInWithPassword(values);
 
-    if (error) {
-      setError('root', { type: 'server', message: error });
-      setIsPending(false);
-      return;
-    }
-
-    // Refresh the auth state
-    await checkSession?.();
-
-    if (values.keepLoggedIn) {
-      localStorage.setItem('keepLoggedIn', 'true');
-      const existingTimeoutId = window.sessionStorage.getItem('logoutTimeoutId');
-      if (existingTimeoutId) {
-        clearTimeout(Number(existingTimeoutId));
-        window.sessionStorage.removeItem('logoutTimeoutId');
+      if (error) {
+        setError('root', { type: 'server', message: error });
+        setIsPending(false);
+        return;
       }
-    } else {
-      localStorage.setItem('keepLoggedIn', 'false');
-      localStorage.setItem('lastActivity', Date.now().toString());
 
-      const checkInactivity = (): void => {
-        const lastActivity = Number(localStorage.getItem('lastActivity') || '0');
-        const now = Date.now();
+      // Refresh the auth state
+      await checkSession?.();
 
-        if (now - lastActivity > 60000) {
-          // ✅ Await the Promise to avoid floating promise error
-          authClient.signOut().then(() => {
-            router.push(paths.auth.signIn);
-          }).catch((err) => console.error('Error signing out:', err));
-        } else {
-          const timeoutId = window.setTimeout(checkInactivity, 10000);
-          window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
+      if (values.keepLoggedIn) {
+        localStorage.setItem('keepLoggedIn', 'true');
+        const existingTimeoutId = window.sessionStorage.getItem('logoutTimeoutId');
+        if (existingTimeoutId) {
+          clearTimeout(Number(existingTimeoutId));
+          window.sessionStorage.removeItem('logoutTimeoutId');
         }
-      };
-
-      const timeoutId = window.setTimeout(checkInactivity, 10000);
-      window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
-
-      const updateActivity = (): void => {
+      } else {
+        localStorage.setItem('keepLoggedIn', 'false');
         localStorage.setItem('lastActivity', Date.now().toString());
-      };
 
-      window.addEventListener('mousemove', updateActivity);
-      window.addEventListener('click', updateActivity);
-      window.addEventListener('keypress', updateActivity);
-      window.addEventListener('scroll', updateActivity);
+        const checkInactivity = (): void => {
+          const lastActivity = Number(localStorage.getItem('lastActivity') || '0');
+          const now = Date.now();
 
-      window.sessionStorage.setItem('hasActivityListeners', 'true');
+          if (now - lastActivity > 60000) {
+            authClient.signOut()
+              .then(() => {
+                router.push(paths.auth.signIn);
+              })
+              .catch((err: unknown) => {
+                console.error('Error signing out:', err);
+              });
+          } else {
+            const timeoutId = window.setTimeout(checkInactivity, 10000);
+            window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
+          }
+        };
+
+        const timeoutId = window.setTimeout(checkInactivity, 10000);
+        window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
+
+        const updateActivity = (): void => {
+          localStorage.setItem('lastActivity', Date.now().toString());
+        };
+
+        window.addEventListener('mousemove', updateActivity);
+        window.addEventListener('click', updateActivity);
+        window.addEventListener('keypress', updateActivity);
+        window.addEventListener('scroll', updateActivity);
+
+        window.sessionStorage.setItem('hasActivityListeners', 'true');
+      }
+
+      router.refresh();
+    } catch (err: unknown) {
+      console.error('Unexpected error:', err);
     }
-
-    router.refresh();
   }, [checkSession, router, setError]);
 
   React.useEffect((): (() => void) => {
@@ -152,7 +158,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.email)}>
                 <InputLabel>Email address</InputLabel>
                 <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email && <FormHelperText>{errors.email.message}</FormHelperText>}
+                {errors.email?.message && <FormHelperText>{errors.email.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -166,15 +172,15 @@ export function SignInForm(): React.JSX.Element {
                   {...field}
                   endAdornment={
                     showPassword ? (
-                      <EyeIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={(): void => setShowPassword(false)} />
+                      <EyeIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={() => setShowPassword(false)} />
                     ) : (
-                      <EyeSlashIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={(): void => setShowPassword(true)} />
+                      <EyeSlashIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={() => setShowPassword(true)} />
                     )
                   }
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                 />
-                {errors.password && <FormHelperText>{errors.password.message}</FormHelperText>}
+                {errors.password?.message && <FormHelperText>{errors.password.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -190,7 +196,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControlLabel control={<Checkbox {...field} />} label="Keep me logged in" />
             )}
           />
-          {errors.root && <Alert color="error">{errors.root.message}</Alert>}
+          {errors.root?.message && <Alert color="error">{errors.root.message}</Alert>}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>

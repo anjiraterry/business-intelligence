@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { dashboardData } from '@/mocks/data';
 
-interface DashboardData {
-  // Define the structure of your `dashboardData` (adjust fields as needed)
-  [key: string]: unknown;
-}
+type DashboardData = Record<string, unknown>;
 
 interface UseDashboardDataReturn {
   data: DashboardData;
@@ -24,11 +21,7 @@ export function useDashboardData(): UseDashboardDataReturn {
       try {
         setData(dashboardData);
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err);
-        } else {
-          setError(new Error('An unknown error occurred'));
-        }
+        setError(err instanceof Error ? err : new Error('An unknown error occurred'));
       } finally {
         setIsLoading(false);
       }
