@@ -34,7 +34,7 @@ export function Traffic({ chartSeries, labels, sx }: TrafficProps): React.JSX.El
         <Stack spacing={2}>
           <Chart height={300} options={chartOptions} series={chartSeries} type="donut" width="100%" />
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
-            {chartSeries.map((item, index) => {
+            {chartSeries?.map((item, index) => {
               const label = labels[index];
               const Icon = iconMapping[label];
 

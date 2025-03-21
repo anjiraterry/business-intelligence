@@ -69,85 +69,86 @@ interface DashboardData {
 
 export default function DashboardPage(): React.JSX.Element {
   const { data, isLoading, error } = useDashboardData();
+  const [parsedData, setParsedData] = React.useState<DashboardData | null>(null);
+  
+  React.useEffect(() => {
+    if (data && typeof data === 'object') {
+      console.log('Dashboard data received:', data);
+      setParsedData(data as unknown as DashboardData);
+    }
+  }, [data]);
 
   if (isLoading) {
     return <div>Loading dashboard data...</div>;
   }
 
   if (error) {
-    return <div>Error loading dashboard data</div>;
+    return <div>Error loading dashboard data: {error.message}</div>;
   }
 
-  if (!data || typeof data !== "object" || !("budget" in data)) {
+  if (!parsedData) {
     return <div>Error: Invalid dashboard data</div>;
   }
-  const dashboardData = data as unknown as DashboardData;
 
   return (
     <Grid container spacing={3}>
       <Grid lg={3} sm={6} xs={12}>
         <Budget 
-          diff={dashboardData.budget.diff} 
-          trend={dashboardData.budget.trend} 
+          diff={parsedData.budget?.diff} 
+          trend={parsedData.budget?.trend} 
           sx={{ height: '100%' }} 
-          value={dashboardData.budget.value.toString()}
-
+          value={parsedData.budget?.value.toString()}
         />
       </Grid>
 
       <Grid lg={3} sm={6} xs={12}>
         <TotalCustomers 
-          diff={dashboardData.customers.diff} 
-          trend={dashboardData.customers.trend} 
+          diff={parsedData.customers?.diff} 
+          trend={parsedData.customers?.trend} 
           sx={{ height: '100%' }} 
-          value={dashboardData.budget.value.toString()}
-
+          value={parsedData.customers?.value.toString()}
         />
       </Grid>
 
       <Grid lg={3} sm={6} xs={12}>
         <TasksProgress 
           sx={{ height: '100%' }} 
-          value={dashboardData.tasks.value} 
+          value={parsedData.tasks?.value} 
         />
       </Grid>
 
       <Grid lg={3} sm={6} xs={12}>
         <TotalProfit 
           sx={{ height: '100%' }} 
-          value={dashboardData.profit.value.toString()} // Convert to string
+          value={parsedData.profit?.value.toString()} 
         />
       </Grid>
 
       <Grid lg={12} xs={12}>
         <SalesTrend
-          chartSeries={[
-            { name: "Sales", data: dashboardData.salesTrend.chartSeries.map(Number) }
-          ]}
+          chartSeries={parsedData.salesTrend?.chartSeries}
           sx={{ height: '100%' }}
         />
       </Grid>
 
       <Grid lg={8} xs={12}>
         <UserGrowth
-          chartSeries={[
-            { name: "User Growth", data: dashboardData.userGrowth.chartSeries.map(Number) }
-          ]}
+          chartSeries={parsedData.userGrowth?.chartSeries}
           sx={{ height: '100%' }}
         />
       </Grid>
 
       <Grid lg={4} md={6} xs={12}>
         <Traffic 
-          chartSeries={dashboardData.traffic.chartSeries} 
-          labels={dashboardData.traffic.labels} 
+          chartSeries={parsedData.traffic?.chartSeries} 
+          labels={parsedData.traffic?.labels} 
           sx={{ height: '100%' }} 
         />
       </Grid>
 
       <Grid lg={12} md={12} xs={12}>
         <LatestOrders
-          orders={dashboardData.orders}
+          orders={parsedData?.orders}
           sx={{ height: '100%' }}
         />
       </Grid>
