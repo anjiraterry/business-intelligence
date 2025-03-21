@@ -17,7 +17,7 @@ const user = {
 
 export function AccountInfo(): React.JSX.Element {
   // Get initials from the name
-  const getInitials = (name: string) => {
+  const getInitials = (name: string): string => {
     return name
       .split(' ')
       .map((part) => part[0])
@@ -26,7 +26,7 @@ export function AccountInfo(): React.JSX.Element {
   };
 
   // Get a consistent color based on the name
-  const getAvatarColor = (name: string) => {
+  const getAvatarColor = (name: string): string => {
     const colors = [
       '#F44336', // Red
       '#E91E63', // Pink
@@ -40,13 +40,13 @@ export function AccountInfo(): React.JSX.Element {
       '#FF9800', // Orange
       '#FF5722', // Deep Orange
     ];
-    
+
     // Simple hash function to get a number from a string
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      hash = name.charCodeAt(i) + (hash * 31); // Replacing bitwise shift with a safer hash function
     }
-    
+
     // Use the hash to select a color
     const index = Math.abs(hash) % colors.length;
     return colors[index];

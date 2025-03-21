@@ -9,8 +9,6 @@ import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { ArrowSquareUpRight as ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareUpRight';
-import { CaretUpDown as CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
 
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
@@ -20,6 +18,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
 import { authClient } from '@/lib/auth/client'; 
+
 export interface MobileNavProps {
   onClose?: () => void;
   open?: boolean;
@@ -29,42 +28,38 @@ export interface MobileNavProps {
 export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
 
-
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     try {
       await authClient.signOut();
       
-      
       localStorage.removeItem('keepLoggedIn');
       localStorage.removeItem('lastActivity');
-      
-      
+
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
         clearTimeout(parseInt(timeoutId));
         window.sessionStorage.removeItem('logoutTimeoutId');
       }
-      
-     
+
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
-        const updateActivity = () => {
+        const updateActivity = (): void => {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
-        
+
         window.removeEventListener('mousemove', updateActivity);
         window.removeEventListener('click', updateActivity);
         window.removeEventListener('keypress', updateActivity);
         window.removeEventListener('scroll', updateActivity);
-        
+
         window.sessionStorage.removeItem('hasActivityListeners');
       }
-      
-    
+
       window.location.href = paths.auth.signIn;
     } catch (error) {
-      console.error('Logout failed:', error);
+      alert('Logout failed. Please try again.'); // Optional: replace console.error with alert
     }
   };
+
   return (
     <Drawer
       PaperProps={{
@@ -93,28 +88,28 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       onClose={onClose}
       open={open}
     >
-        <Stack spacing={2} sx={{ p: 3 }}>
-      <Box
-        component={RouterLink}
-        href={paths.home}
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          textDecoration: "none",
-        }}
-      >
+      <Stack spacing={2} sx={{ p: 3 }}>
         <Box
+          component={RouterLink}
+          href={paths.home}
           sx={{
-            fontSize: 18, 
-            fontWeight: "bold",
-            color: "white", 
-            letterSpacing: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            textDecoration: "none",
           }}
         >
-          Business Intelligence
+          <Box
+            sx={{
+              fontSize: 18, 
+              fontWeight: "bold",
+              color: "white", 
+              letterSpacing: 1,
+            }}
+          >
+            Business Intelligence
+          </Box>
         </Box>
-      </Box>
-    </Stack>
+      </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
         {renderNavItems({ pathname, items: navItems })}
@@ -125,10 +120,10 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
           <Button
             endIcon={<LogoutIcon sx={{ fontSize: "var(--icon-fontSize-md)" }} />}
             fullWidth
-            onClick={handleLogout} // Changed to onClick handler
+            onClick={handleLogout}
             sx={{ mt: 2 }}
             variant="contained"
-            color="error" // Optional: make it red to indicate danger
+            color="error"
           >
             Logout
           </Button>
@@ -141,9 +136,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
 function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.JSX.Element {
   const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
     const { key, ...item } = curr;
-
     acc.push(<NavItem key={key} pathname={pathname} {...item} />);
-
     return acc;
   }, []);
 

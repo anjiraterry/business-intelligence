@@ -11,7 +11,7 @@ import { Sun as SunIcon } from '@phosphor-icons/react/dist/ssr/Sun';
 export function ThemeToggle(): React.JSX.Element {
   const { mode, setMode } = useColorScheme();
 
-  const handleToggle = () => {
+  const handleToggle = (): void => {
     setMode(mode === 'light' ? 'dark' : 'light');
   };
 

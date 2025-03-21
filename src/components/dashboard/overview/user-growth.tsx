@@ -30,7 +30,7 @@ export function UserGrowth({ chartSeries, sx }: UserGrowthProps): React.JSX.Elem
   // Responsive chart height
   const chartHeight = isMobile ? 250 : isTablet ? 300 : 350;
   
-  const chartOptions = useChartOptions(isMobile, isTablet);
+  const chartOptions: ApexOptions = useChartOptions(isMobile, isTablet);
 
   return (
     <Card sx={sx}>
@@ -72,14 +72,14 @@ export function UserGrowth({ chartSeries, sx }: UserGrowthProps): React.JSX.Elem
 function useChartOptions(isMobile: boolean, isTablet: boolean): ApexOptions {
   const theme = useTheme();
   
-  const getCategories = () => {
+  const getCategories = (): string[] => {
     if (isMobile) {
       return ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov']; // Mobile: Show fewer months
-    } else if (isTablet) {
-      return ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']; // Tablet: Short names
-    } else {
-      return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; // Desktop: Full names
     }
+    if (isTablet) {
+      return ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']; // Tablet: Short names
+    }
+    return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; // Desktop: Full names
   };
 
   return {
@@ -140,7 +140,7 @@ function useChartOptions(isMobile: boolean, isTablet: boolean): ApexOptions {
       },
     },
     yaxis: {
-      tickAmount: isMobile ? 3 : 5, // ✅ Moved tickAmount here
+      tickAmount: isMobile ? 3 : 5,
       labels: {
         formatter: (value) => (value > 0 ? (isMobile ? `${value}` : `${value}K`) : `${value}`),
         offsetX: isMobile ? -5 : -10,

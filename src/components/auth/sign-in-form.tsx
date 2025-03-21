@@ -40,11 +40,8 @@ const defaultValues = {
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
-
   const { checkSession } = useUser();
-
-  const [showPassword, setShowPassword] = React.useState<boolean>();
-
+  const [showPassword, setShowPassword] = React.useState<boolean>(false);
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
   const {
@@ -54,91 +51,74 @@ export function SignInForm(): React.JSX.Element {
     formState: { errors },
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
-  const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
-      setIsPending(true);
+  // ✅ Explicit return type added
+  const onSubmit = React.useCallback(async (values: Values): Promise<void> => {
+    setIsPending(true);
 
-      const { error } = await authClient.signInWithPassword(values);
+    const { error } = await authClient.signInWithPassword(values);
 
-      if (error) {
-        setError('root', { type: 'server', message: error });
-        setIsPending(false);
-        return;
+    if (error) {
+      setError('root', { type: 'server', message: error });
+      setIsPending(false);
+      return;
+    }
+
+    // Refresh the auth state
+    await checkSession?.();
+
+    if (values.keepLoggedIn) {
+      localStorage.setItem('keepLoggedIn', 'true');
+      const existingTimeoutId = window.sessionStorage.getItem('logoutTimeoutId');
+      if (existingTimeoutId) {
+        clearTimeout(Number(existingTimeoutId));
+        window.sessionStorage.removeItem('logoutTimeoutId');
       }
+    } else {
+      localStorage.setItem('keepLoggedIn', 'false');
+      localStorage.setItem('lastActivity', Date.now().toString());
 
-      // Refresh the auth state
-      await checkSession?.();
+      const checkInactivity = (): void => {
+        const lastActivity = Number(localStorage.getItem('lastActivity') || '0');
+        const now = Date.now();
 
-      // Handle the "Keep me logged in" preference
-      if (values.keepLoggedIn) {
-        // Store this preference in localStorage
-        localStorage.setItem('keepLoggedIn', 'true');
-        // If there's an existing timeout, clear it
-        const existingTimeoutId = window.sessionStorage.getItem('logoutTimeoutId');
-        if (existingTimeoutId) {
-          clearTimeout(parseInt(existingTimeoutId));
-          window.sessionStorage.removeItem('logoutTimeoutId');
+        if (now - lastActivity > 60000) {
+          // ✅ Await the Promise to avoid floating promise error
+          authClient.signOut().then(() => {
+            router.push(paths.auth.signIn);
+          }).catch((err) => console.error('Error signing out:', err));
+        } else {
+          const timeoutId = window.setTimeout(checkInactivity, 10000);
+          window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
         }
-      } else {
-        // Set up inactivity tracking
-        localStorage.setItem('keepLoggedIn', 'false');
+      };
+
+      const timeoutId = window.setTimeout(checkInactivity, 10000);
+      window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
+
+      const updateActivity = (): void => {
         localStorage.setItem('lastActivity', Date.now().toString());
+      };
 
-        // Create a function to check inactivity
-        const checkInactivity = () => {
-          const lastActivity = parseInt(localStorage.getItem('lastActivity') || '0');
-          const now = Date.now();
+      window.addEventListener('mousemove', updateActivity);
+      window.addEventListener('click', updateActivity);
+      window.addEventListener('keypress', updateActivity);
+      window.addEventListener('scroll', updateActivity);
 
-          if (now - lastActivity > 60000) { // 1 minute = 60000ms
-            // Inactive for more than a minute, log out
-            authClient.signOut().then(() => {
-              router.push(paths.auth.signIn);
-            });
-          } else {
-            // Still within time limit, schedule next check
-            const timeoutId = setTimeout(checkInactivity, 10000); // Check every 10 seconds
-            window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
-          }
-        };
+      window.sessionStorage.setItem('hasActivityListeners', 'true');
+    }
 
-        // Start the inactivity checker
-        const timeoutId = setTimeout(checkInactivity, 10000); // First check after 10 seconds
-        window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
+    router.refresh();
+  }, [checkSession, router, setError]);
 
-        // Set up activity listeners
-        const updateActivity = () => {
-          localStorage.setItem('lastActivity', Date.now().toString());
-        };
-
-        // Add event listeners
-        window.addEventListener('mousemove', updateActivity);
-        window.addEventListener('click', updateActivity);
-        window.addEventListener('keypress', updateActivity);
-        window.addEventListener('scroll', updateActivity);
-
-        // Store the event listener references for later cleanup
-        window.sessionStorage.setItem('hasActivityListeners', 'true');
-      }
-
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
-      router.refresh();
-    },
-    [checkSession, router, setError]
-  );
-
-  React.useEffect(() => {
-    // Cleanup function
+  React.useEffect((): (() => void) => {
     return () => {
-      // Clear any timeout
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
-        clearTimeout(parseInt(timeoutId));
+        clearTimeout(Number(timeoutId));
       }
 
-      // Remove event listeners if they were added
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
-        const updateActivity = () => {
+        const updateActivity = (): void => {
           localStorage.setItem('lastActivity', Date.now().toString());
         };
 
@@ -172,7 +152,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.email)}>
                 <InputLabel>Email address</InputLabel>
                 <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
+                {errors.email && <FormHelperText>{errors.email.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -186,27 +166,15 @@ export function SignInForm(): React.JSX.Element {
                   {...field}
                   endAdornment={
                     showPassword ? (
-                      <EyeIcon
-                        cursor="pointer"
-                        fontSize="var(--icon-fontSize-md)"
-                        onClick={(): void => {
-                          setShowPassword(false);
-                        }}
-                      />
+                      <EyeIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={(): void => setShowPassword(false)} />
                     ) : (
-                      <EyeSlashIcon
-                        cursor="pointer"
-                        fontSize="var(--icon-fontSize-md)"
-                        onClick={(): void => {
-                          setShowPassword(true);
-                        }}
-                      />
+                      <EyeSlashIcon cursor="pointer" fontSize="var(--icon-fontSize-md)" onClick={(): void => setShowPassword(true)} />
                     )
                   }
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                 />
-                {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
+                {errors.password && <FormHelperText>{errors.password.message}</FormHelperText>}
               </FormControl>
             )}
           />
@@ -219,27 +187,17 @@ export function SignInForm(): React.JSX.Element {
             control={control}
             name="keepLoggedIn"
             render={({ field }) => (
-              <FormControlLabel
-                control={<Checkbox {...field} />}
-                label="Keep me logged in"
-              />
+              <FormControlLabel control={<Checkbox {...field} />} label="Keep me logged in" />
             )}
           />
-          {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+          {errors.root && <Alert color="error">{errors.root.message}</Alert>}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>
         </Stack>
       </form>
       <Alert color="warning">
-        Use{' '}
-        <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-          anjiraterry@gmail.com
-        </Typography>{' '}
-        with password{' '}
-        <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-          Secret1
-        </Typography>
+        Use <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">anjiraterry@gmail.com</Typography> with password <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">Secret1</Typography>
       </Alert>
     </Stack>
   );

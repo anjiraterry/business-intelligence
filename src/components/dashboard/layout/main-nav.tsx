@@ -20,7 +20,7 @@ import { UserPopover } from './user-popover';
 
 const user = {
   name: 'Anjira Terry',
-  email:'anjiraterry@gmail.com',
+  email: 'anjiraterry@gmail.com',
   jobTitle: 'FrontEnd Developer',
   country: 'Nigeria',
   city: 'Abuja',
@@ -31,7 +31,7 @@ export function MainNav(): React.JSX.Element {
 
   const userPopover = usePopover<HTMLDivElement>();
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string): string => {
     return name
       .split(' ')
       .map((part) => part[0])
@@ -40,7 +40,7 @@ export function MainNav(): React.JSX.Element {
   };
 
   // Get a consistent color based on the name
-  const getAvatarColor = (name: string) => {
+  const getAvatarColor = (name: string): string => {
     const colors = [
       '#F44336', // Red
       '#E91E63', // Pink
@@ -54,13 +54,13 @@ export function MainNav(): React.JSX.Element {
       '#FF9800', // Orange
       '#FF5722', // Deep Orange
     ];
-    
+
     // Simple hash function to get a number from a string
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      hash = name.charCodeAt(i) + (hash * 31); // Replaced bitwise shift with multiplication
     }
-    
+
     // Use the hash to select a color
     const index = Math.abs(hash) % colors.length;
     return colors[index];
@@ -68,7 +68,6 @@ export function MainNav(): React.JSX.Element {
 
   const initials = getInitials(user.name);
   const avatarColor = getAvatarColor(user.name);
-
 
   return (
     <React.Fragment>
@@ -115,20 +114,20 @@ export function MainNav(): React.JSX.Element {
                 </IconButton>
               </Badge>
             </Tooltip>
-            
+
             <ThemeToggle />
             <div>
-            <Avatar
-              sx={{
-                height: '40px',
-                width: '40px',
-                fontSize: '1rem',
-                bgcolor: avatarColor
-              }}
-            >
-              {initials}
-            </Avatar>
-          </div>
+              <Avatar
+                sx={{
+                  height: '40px',
+                  width: '40px',
+                  fontSize: '1rem',
+                  bgcolor: avatarColor,
+                }}
+              >
+                {initials}
+              </Avatar>
+            </div>
           </Stack>
         </Stack>
       </Box>

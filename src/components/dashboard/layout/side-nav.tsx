@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import RouterLink from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; 
+import { usePathname } from 'next/navigation'; 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -19,45 +19,41 @@ import { navIcons } from './nav-icons';
 
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
-  const router = useRouter(); // Add router
 
   // Function to handle logout
- // Function to handle logout
-const handleLogout = async () => {
-  try {
-    await authClient.signOut();
-    
-   
-    localStorage.removeItem('keepLoggedIn');
-    localStorage.removeItem('lastActivity');
-    
- 
-    const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
-    if (timeoutId) {
-      clearTimeout(parseInt(timeoutId));
-      window.sessionStorage.removeItem('logoutTimeoutId');
+  const handleLogout = async (): Promise<void> => {
+    try {
+      await authClient.signOut();
+
+      localStorage.removeItem('keepLoggedIn');
+      localStorage.removeItem('lastActivity');
+
+      const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
+      if (timeoutId) {
+        clearTimeout(parseInt(timeoutId));
+        window.sessionStorage.removeItem('logoutTimeoutId');
+      }
+
+      if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
+        const updateActivity = () => {
+          localStorage.setItem('lastActivity', Date.now().toString());
+        };
+        
+        window.removeEventListener('mousemove', updateActivity);
+        window.removeEventListener('click', updateActivity);
+        window.removeEventListener('keypress', updateActivity);
+        window.removeEventListener('scroll', updateActivity);
+        
+        window.sessionStorage.removeItem('hasActivityListeners');
+      }
+
+      // Redirect to sign-in page
+      window.location.href = paths.auth.signIn;
+    } catch (error) {
+      alert('Logout failed. Please try again.'); // Replace console.error
     }
-    
-  
-    if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
-      const updateActivity = () => {
-        localStorage.setItem('lastActivity', Date.now().toString());
-      };
-      
-      window.removeEventListener('mousemove', updateActivity);
-      window.removeEventListener('click', updateActivity);
-      window.removeEventListener('keypress', updateActivity);
-      window.removeEventListener('scroll', updateActivity);
-      
-      window.sessionStorage.removeItem('hasActivityListeners');
-    }
-    
-    // Force a hard navigation to the login page instead of using the router
-    window.location.href = paths.auth.signIn;
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
-};
+  };
+
   return (
     <Box
       sx={{
@@ -87,27 +83,27 @@ const handleLogout = async () => {
       }}
     >
       <Stack spacing={2} sx={{ p: 3 }}>
-      <Box
-        component={RouterLink}
-        href={paths.home}
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          textDecoration: "none",
-        }}
-      >
         <Box
+          component={RouterLink}
+          href={paths.home}
           sx={{
-            fontSize: 24, 
-            fontWeight: "bold",
-            color: "white", 
-            letterSpacing: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            textDecoration: "none",
           }}
         >
-          Business Intelligence
+          <Box
+            sx={{
+              fontSize: 24, 
+              fontWeight: "bold",
+              color: "white", 
+              letterSpacing: 1,
+            }}
+          >
+            Business Intelligence
+          </Box>
         </Box>
-      </Box>
-    </Stack>
+      </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
         {renderNavItems({ pathname, items: navItems })}
@@ -116,12 +112,11 @@ const handleLogout = async () => {
       <Stack spacing={2} sx={{ p: '12px' }}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button
-            endIcon={<LogoutIcon  sx={{ fontSize: "var(--icon-fontSize-md)" }} />}
+            endIcon={<LogoutIcon sx={{ fontSize: "var(--icon-fontSize-md)" }} />}
             fullWidth
-            onClick={handleLogout} // Changed to onClick handler
+            onClick={handleLogout} 
             sx={{ mt: 2 }}
             variant="contained"
-          
           >
             Logout
           </Button>
@@ -132,13 +127,10 @@ const handleLogout = async () => {
 }
 
 function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.JSX.Element {
-  const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
+  const children = items.map((curr) => {
     const { key, ...item } = curr;
-
-    acc.push(<NavItem key={key} pathname={pathname} {...item} />);
-
-    return acc;
-  }, []);
+    return <NavItem key={key} pathname={pathname} {...item} />;
+  });
 
   return (
     <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
