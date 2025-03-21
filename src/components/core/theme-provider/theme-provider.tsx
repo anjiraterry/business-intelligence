@@ -21,7 +21,6 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.JSX.Eleme
       <CssVarsProvider 
         theme={theme} 
         defaultMode="light" 
-        enableColorScheme 
         modeStorageKey="theme-mode-preference"
       >
         <CssBaseline />
