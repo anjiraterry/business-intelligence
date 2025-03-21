@@ -38,11 +38,6 @@ const defaultValues: Values = {
   keepLoggedIn: false 
 };
 
-// Store these functions to reference them in cleanup
-const noop = (): void => {
-  // Empty function with explicit return type
-};
-
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
   const { checkSession } = useUser();
@@ -95,9 +90,8 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch((err) => {
-                // Log the error but keep it handled
-                console.error('Error during sign out:', err);
+              .catch((_err: unknown) => {
+                // Error is handled silently
               }); 
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
@@ -118,12 +112,15 @@ export function SignInForm(): React.JSX.Element {
       }
 
       router.refresh();
-    } catch (error) {
+    } catch (err: unknown) {
       setError('root', { type: 'server', message: 'An unexpected error occurred.' });
     }
   }, [checkSession, router, setError]);
 
   React.useEffect(() => {
+    // Store the current value of the function at the time the effect runs
+    const updateActivity = updateActivityRef.current;
+    
     return () => {
       const timeoutId = window.sessionStorage.getItem('logoutTimeoutId');
       if (timeoutId) {
@@ -131,11 +128,11 @@ export function SignInForm(): React.JSX.Element {
       }
 
       if (window.sessionStorage.getItem('hasActivityListeners') === 'true') {
-        // Remove event listeners using the same reference
-        window.removeEventListener('mousemove', updateActivityRef.current);
-        window.removeEventListener('click', updateActivityRef.current);
-        window.removeEventListener('keypress', updateActivityRef.current);
-        window.removeEventListener('scroll', updateActivityRef.current);
+        // Use the stored value from when the effect ran
+        window.removeEventListener('mousemove', updateActivity);
+        window.removeEventListener('click', updateActivity);
+        window.removeEventListener('keypress', updateActivity);
+        window.removeEventListener('scroll', updateActivity);
 
         window.sessionStorage.removeItem('hasActivityListeners');
       }
