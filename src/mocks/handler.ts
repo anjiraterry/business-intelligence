@@ -1,35 +1,34 @@
-// src/mocks/handlers.ts
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { dashboardData } from './data';
 
 export const handlers = [
   // Get all dashboard data
-  rest.get('/api/dashboard', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData));
+  http.get('/api/dashboard', () => {
+    return HttpResponse.json(dashboardData, { status: 200 });
   }),
-  
-  // Get individual data endpoints
-  rest.get('/api/dashboard/budget', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData.budget));
+
+  // Specific endpoints
+  http.get('/api/dashboard/budget', () => {
+    return HttpResponse.json(dashboardData.budget ?? {}, { status: 200 });
   }),
-  
-  rest.get('/api/dashboard/customers', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData.customers));
+
+  http.get('/api/dashboard/customers', () => {
+    return HttpResponse.json(dashboardData.customers ?? {}, { status: 200 });
   }),
-  
-  rest.get('/api/dashboard/sales-trend', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData.salesTrend));
+
+  http.get('/api/dashboard/sales-trend', () => {
+    return HttpResponse.json(dashboardData.salesTrend ?? {}, { status: 200 });
   }),
-  
-  rest.get('/api/dashboard/user-growth', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData.userGrowth));
+
+  http.get('/api/dashboard/user-growth', () => {
+    return HttpResponse.json(dashboardData.userGrowth ?? {}, { status: 200 });
   }),
-  
-  rest.get('/api/dashboard/traffic', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData.traffic));
+
+  http.get('/api/dashboard/traffic', () => {
+    return HttpResponse.json(dashboardData.traffic ?? {}, { status: 200 });
   }),
-  
-  rest.get('/api/dashboard/orders', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardData.orders));
+
+  http.get('/api/dashboard/orders', () => {
+    return HttpResponse.json(dashboardData.orders ?? {}, { status: 200 });
   }),
 ];
