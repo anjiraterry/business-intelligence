@@ -26,9 +26,9 @@ export function UserGrowth({ chartSeries, sx }: UserGrowthProps): React.JSX.Elem
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // Height should be responsive - smaller on mobile
-  const chartHeight = isMobile ? 250 : (isTablet ? 300 : 350);
+
+  // Responsive chart height
+  const chartHeight = isMobile ? 250 : isTablet ? 300 : 350;
   
   const chartOptions = useChartOptions(isMobile, isTablet);
 
@@ -72,17 +72,13 @@ export function UserGrowth({ chartSeries, sx }: UserGrowthProps): React.JSX.Elem
 function useChartOptions(isMobile: boolean, isTablet: boolean): ApexOptions {
   const theme = useTheme();
   
-  // Determine which months to display based on screen size
   const getCategories = () => {
     if (isMobile) {
-      // Show only every other month on mobile
-      return ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'];
+      return ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov']; // Mobile: Show fewer months
     } else if (isTablet) {
-      // Show abbreviated months on tablet
-      return ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+      return ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']; // Tablet: Short names
     } else {
-      // Show full months on desktop
-      return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; // Desktop: Full names
     }
   };
 
@@ -109,7 +105,7 @@ function useChartOptions(isMobile: boolean, isTablet: boolean): ApexOptions {
       },
     },
     legend: { 
-      show: !isMobile, // Hide legend on mobile
+      show: !isMobile, 
       position: 'top',
       horizontalAlign: 'right',
       fontSize: isTablet ? '10px' : '12px',
@@ -123,8 +119,7 @@ function useChartOptions(isMobile: boolean, isTablet: boolean): ApexOptions {
     },
     plotOptions: { 
       bar: { 
-        columnWidth: isMobile ? '70%' : (isTablet ? '50%' : '40px'),
-        // Make bars thinner on mobile so they don't overlap
+        columnWidth: isMobile ? '70%' : isTablet ? '50%' : '40px',
         distributed: isMobile,
       } 
     },
@@ -138,42 +133,34 @@ function useChartOptions(isMobile: boolean, isTablet: boolean): ApexOptions {
         offsetY: 5, 
         style: { 
           colors: theme.palette.text.secondary,
-          fontSize: isMobile ? '8px' : (isTablet ? '10px' : '12px'), 
+          fontSize: isMobile ? '8px' : isTablet ? '10px' : '12px', 
         },
         rotate: isMobile ? -45 : 0,
         hideOverlappingLabels: true,
       },
     },
     yaxis: {
+      tickAmount: isMobile ? 3 : 5, // ✅ Moved tickAmount here
       labels: {
         formatter: (value) => (value > 0 ? (isMobile ? `${value}` : `${value}K`) : `${value}`),
         offsetX: isMobile ? -5 : -10,
         style: { 
           colors: theme.palette.text.secondary,
-          fontSize: isMobile ? '8px' : (isTablet ? '10px' : '12px'),
+          fontSize: isMobile ? '8px' : isTablet ? '10px' : '12px',
         },
-        // Show fewer labels on mobile
-        tickAmount: isMobile ? 3 : 5,
       },
     },
-    // Add responsive configuration
     responsive: [
       {
-        breakpoint: 600, // For mobile
+        breakpoint: 600, 
         options: {
-          chart: {
-            height: 250,
-          },
-          // Any mobile-specific options can go here
+          chart: { height: 250 },
         }
       },
       {
-        breakpoint: 960, // For tablet
+        breakpoint: 960, 
         options: {
-          chart: {
-            height: 300,
-          },
-          // Any tablet-specific options can go here
+          chart: { height: 300 },
         }
       }
     ]
