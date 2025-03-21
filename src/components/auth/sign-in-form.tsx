@@ -182,11 +182,6 @@ export function SignInForm(): React.JSX.Element {
               </FormControl>
             )}
           />
-          <div>
-            <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
-              Forgot password?
-            </Link>
-          </div>
           <Controller
             control={control}
             name="keepLoggedIn"
@@ -194,7 +189,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControlLabel control={<Checkbox {...field} />} label="Keep me logged in" />
             )}
           />
-          {errors.root?.message && <Alert color="error">{errors.root.message}</Alert>}
+          {Boolean(errors.root?.message) && <Alert color="error">{errors.root?.message}</Alert>} {/* ✅ FIXED */}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>
