@@ -86,9 +86,7 @@ export function SignInForm(): React.JSX.Element {
               .then(() => {
                 router.push(paths.auth.signIn);
               })
-              .catch((err: unknown) => {
-                console.error('Error signing out:', err);
-              });
+              .catch(() => {}); // Avoid console logs
           } else {
             const timeoutId = window.setTimeout(checkInactivity, 10000);
             window.sessionStorage.setItem('logoutTimeoutId', timeoutId.toString());
@@ -111,8 +109,8 @@ export function SignInForm(): React.JSX.Element {
       }
 
       router.refresh();
-    } catch (err: unknown) {
-      console.error('Unexpected error:', err);
+    } catch {
+      // Avoid console logs
     }
   }, [checkSession, router, setError]);
 
@@ -158,7 +156,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.email)}>
                 <InputLabel>Email address</InputLabel>
                 <OutlinedInput {...field} label="Email address" type="email" />
-                {errors.email?.message && <FormHelperText>{errors.email.message}</FormHelperText>}
+                {errors.email?.message ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -180,7 +178,7 @@ export function SignInForm(): React.JSX.Element {
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                 />
-                {errors.password?.message && <FormHelperText>{errors.password.message}</FormHelperText>}
+                {errors.password?.message ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -196,7 +194,7 @@ export function SignInForm(): React.JSX.Element {
               <FormControlLabel control={<Checkbox {...field} />} label="Keep me logged in" />
             )}
           />
-          {errors.root?.message && <Alert color="error">{errors.root.message}</Alert>}
+          {errors.root?.message ? <Alert color="error">{errors.root.message}</Alert> : null}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign in
           </Button>

@@ -9,6 +9,8 @@ import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
@@ -27,6 +29,7 @@ export interface MobileNavProps {
 
 export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -56,81 +59,87 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
   
       window.location.href = paths.auth.signIn;
     } catch (error) {
-      console.error('Logout failed:', error); // ✅ Replaces alert with console.error
+      setErrorMessage('Logout failed. Please try again.');
     }
   };
-  
 
   return (
-    <Drawer
-      PaperProps={{
-        sx: {
-          '--MobileNav-background': 'var(--mui-palette-neutral-950)',
-          '--MobileNav-color': 'var(--mui-palette-common-white)',
-          '--NavItem-color': 'var(--mui-palette-neutral-300)',
-          '--NavItem-hover-background': 'rgba(255, 255, 255, 0.04)',
-          '--NavItem-active-background': 'var(--mui-palette-primary-main)',
-          '--NavItem-active-color': 'var(--mui-palette-primary-contrastText)',
-          '--NavItem-disabled-color': 'var(--mui-palette-neutral-500)',
-          '--NavItem-icon-color': 'var(--mui-palette-neutral-400)',
-          '--NavItem-icon-active-color': 'var(--mui-palette-primary-contrastText)',
-          '--NavItem-icon-disabled-color': 'var(--mui-palette-neutral-600)',
-          bgcolor: 'var(--MobileNav-background)',
-          color: 'var(--MobileNav-color)',
-          display: 'flex',
-          flexDirection: 'column',
-          maxWidth: '100%',
-          scrollbarWidth: 'none',
-          width: 'var(--MobileNav-width)',
-          zIndex: 'var(--MobileNav-zIndex)',
-          '&::-webkit-scrollbar': { display: 'none' },
-        },
-      }}
-      onClose={onClose}
-      open={open}
-    >
-      <Stack spacing={2} sx={{ p: 3 }}>
-        <Box
-          component={RouterLink}
-          href={paths.home}
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            textDecoration: "none",
-          }}
-        >
+    <>
+      <Drawer
+        PaperProps={{
+          sx: {
+            '--MobileNav-background': 'var(--mui-palette-neutral-950)',
+            '--MobileNav-color': 'var(--mui-palette-common-white)',
+            '--NavItem-color': 'var(--mui-palette-neutral-300)',
+            '--NavItem-hover-background': 'rgba(255, 255, 255, 0.04)',
+            '--NavItem-active-background': 'var(--mui-palette-primary-main)',
+            '--NavItem-active-color': 'var(--mui-palette-primary-contrastText)',
+            '--NavItem-disabled-color': 'var(--mui-palette-neutral-500)',
+            '--NavItem-icon-color': 'var(--mui-palette-neutral-400)',
+            '--NavItem-icon-active-color': 'var(--mui-palette-primary-contrastText)',
+            '--NavItem-icon-disabled-color': 'var(--mui-palette-neutral-600)',
+            bgcolor: 'var(--MobileNav-background)',
+            color: 'var(--MobileNav-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: '100%',
+            scrollbarWidth: 'none',
+            width: 'var(--MobileNav-width)',
+            zIndex: 'var(--MobileNav-zIndex)',
+            '&::-webkit-scrollbar': { display: 'none' },
+          },
+        }}
+        onClose={onClose}
+        open={open}
+      >
+        <Stack spacing={2} sx={{ p: 3 }}>
           <Box
+            component={RouterLink}
+            href={paths.home}
             sx={{
-              fontSize: 18, 
-              fontWeight: "bold",
-              color: "white", 
-              letterSpacing: 1,
+              display: "inline-flex",
+              alignItems: "center",
+              textDecoration: "none",
             }}
           >
-            Business Intelligence
+            <Box
+              sx={{
+                fontSize: 18, 
+                fontWeight: "bold",
+                color: "white", 
+                letterSpacing: 1,
+              }}
+            >
+              Business Intelligence
+            </Box>
           </Box>
+        </Stack>
+        <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
+        <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
+          {renderNavItems({ pathname, items: navItems })}
         </Box>
-      </Stack>
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
-        {renderNavItems({ pathname, items: navItems })}
-      </Box>
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Stack spacing={2} sx={{ p: '12px' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Button
-            endIcon={<LogoutIcon sx={{ fontSize: "var(--icon-fontSize-md)" }} />}
-            fullWidth
-            onClick={handleLogout}
-            sx={{ mt: 2 }}
-            variant="contained"
-            color="error"
-          >
-            Logout
-          </Button>
-        </Box>
-      </Stack>
-    </Drawer>
+        <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
+        <Stack spacing={2} sx={{ p: '12px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button
+              endIcon={<LogoutIcon sx={{ fontSize: "var(--icon-fontSize-md)" }} />}
+              fullWidth
+              onClick={handleLogout}
+              sx={{ mt: 2 }}
+              variant="contained"
+              color="error"
+            >
+              Logout
+            </Button>
+          </Box>
+        </Stack>
+      </Drawer>
+
+      {/* Error Snackbar */}
+      <Snackbar open={!!errorMessage} autoHideDuration={4000} onClose={() => setErrorMessage(null)}>
+        <Alert severity="error">{errorMessage}</Alert>
+      </Snackbar>
+    </>
   );
 }
 

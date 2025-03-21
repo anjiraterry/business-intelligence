@@ -25,7 +25,7 @@ export default function NextAppDirEmotionCacheProvider(
   const [registry] = React.useState<Registry>(() => {
     const cache = createCache(options);
     cache.compat = true;
-    
+
     const prevInsert = cache.insert;
     let inserted: { name: string; isGlobal: boolean }[] = [];
 
@@ -65,28 +65,29 @@ export default function NextAppDirEmotionCacheProvider(
 
       if (typeof style !== 'boolean') {
         if (isGlobal) {
-          globals.push({ name, style: String(style) }); // Ensuring style is a string
+          globals.push({ name, style: String(style) });
         } else {
           styles += String(style);
-          dataEmotionAttribute = `${dataEmotionAttribute} ${name}`.trim(); // Ensuring proper string concatenation
+          dataEmotionAttribute = `${dataEmotionAttribute} ${name}`.trim();
         }
       }
     });
 
     return (
       <React.Fragment>
-        {globals.map(
-          ({ name, style }): React.JSX.Element => (
-            <style
-              key={name}
-              dangerouslySetInnerHTML={{ __html: style }}
-              data-emotion={`${registry.cache.key!}-global ${name}`} // Used ! to assert non-null
-            />
-          )
+        {globals.map(({ name, style }) => (
+          <style
+            key={name}
+            dangerouslySetInnerHTML={{ __html: style }}
+            data-emotion={`${registry.cache.key}-global ${name}`} // Removed `!` assertion
+          />
+        ))}
+        {styles && (
+          <style
+            dangerouslySetInnerHTML={{ __html: styles }}
+            data-emotion={dataEmotionAttribute}
+          />
         )}
-        {styles ? (
-          <style dangerouslySetInnerHTML={{ __html: styles }} data-emotion={dataEmotionAttribute} />
-        ) : null}
       </React.Fragment>
     );
   });
