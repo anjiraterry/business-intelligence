@@ -11,6 +11,8 @@ import { TotalCustomers } from '@/components/dashboard/overview/total-customers'
 import { TotalProfit } from '@/components/dashboard/overview/total-profit';
 import { Traffic } from '@/components/dashboard/overview/traffic';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 // Define TypeScript interfaces for data structure
 interface BudgetData {
@@ -73,13 +75,22 @@ export default function DashboardPage(): React.JSX.Element {
   
   React.useEffect(() => {
     if (data && typeof data === 'object') {
-      console.log('Dashboard data received:', data);
       setParsedData(data as unknown as DashboardData);
     }
   }, [data]);
 
   if (isLoading) {
-    return <div>Loading dashboard data...</div>;
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '80vh' 
+        }}
+      >
+        <CircularProgress size={60} thickness={4} />
+      </Box>)
   }
 
   if (error) {
@@ -148,7 +159,7 @@ export default function DashboardPage(): React.JSX.Element {
 
       <Grid lg={12} md={12} xs={12}>
         <LatestOrders
-          orders={parsedData?.orders}
+          orders={parsedData.orders}
           sx={{ height: '100%' }}
         />
       </Grid>

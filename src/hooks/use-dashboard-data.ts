@@ -26,11 +26,9 @@ export function useDashboardData(): UseDashboardDataReturn {
           throw new Error(`API error: ${response.status}`);
         }
         
-        const apiData = await response.json();
-        console.log('API data:', apiData);
+        const apiData = await response.json() as DashboardData;
         setData(apiData);
       } catch (err) {
-        console.error('Error fetching data, falling back to mock data:', err);
         // Fallback to direct import if fetch fails (during development)
         setData(dashboardData);
         
