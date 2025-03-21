@@ -116,7 +116,7 @@ const handleLogout = async () => {
       <Stack spacing={2} sx={{ p: '12px' }}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button
-            endIcon={<LogoutIcon fontSize="var(--icon-fontSize-md)" />}
+            endIcon={<LogoutIcon  sx={{ fontSize: "var(--icon-fontSize-md)" }} />}
             fullWidth
             onClick={handleLogout} // Changed to onClick handler
             sx={{ mt: 2 }}
